@@ -26,6 +26,6 @@ RUN echo "if [ -f ${WORKSPACE}/install/setup.bash ]; then source ${WORKSPACE}/in
 # Set env variables for Nav2
 RUN echo "export TURTLEBOT3_MODEL=burger" >> /home/ros/.bashrc
 RUN echo "export GAZEBO_MODEL_PATH=\$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gazebo/models" >> /home/ros/.bashrc
-RUN echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:${WORKSPACE}/install/mpc/share/mpc/models" >> /home/ros/.bashrc
+RUN echo "export GAZEBO_MODEL_PATH=\$GAZEBO_MODEL_PATH:${WORKSPACE}/install/mpc/share/mpc/models" >> /home/ros/.bashrc
 RUN echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /home/ros/.bashrc
 RUN echo "export CYCLONEDDS_URI=${WORKSPACE}/setup/cyclonedds_lo.xml" >> /home/ros/.bashrc
