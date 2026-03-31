@@ -4,6 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nano \
     tmux \
+    libtinfo5 \
     ros-humble-navigation2 \
     ros-humble-nav2-bringup \ 
     ros-humble-turtlebot3-msgs \
