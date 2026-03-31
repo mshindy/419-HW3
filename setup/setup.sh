@@ -48,6 +48,10 @@ if [[ $container == true ]]; then
         git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
         ~/.fzf/install --key-bindings --completion --update-rc
     fi
+
+    bash setup/mars_ws/setup/conda_setup.sh
+    bash setup/mars_ws/setup/odp_setup_conda.sh
+
 fi
 
 # ============
