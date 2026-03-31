@@ -49,8 +49,8 @@ if [[ $container == true ]]; then
         ~/.fzf/install --key-bindings --completion --update-rc
     fi
 
-    bash setup/mars_ws/setup/conda_setup.sh
-    bash setup/mars_ws/setup/odp_setup_conda.sh
+    bash setup/conda_setup.sh
+    bash setup/odp_setup_conda.sh
 
 fi
 
