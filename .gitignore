@@ -62,3 +62,7 @@ py/
 # Misc files
 frames*
 *log
+
+# Ignore Anaconda installer and local env
+Anaconda3-*.sh
+anaconda3/

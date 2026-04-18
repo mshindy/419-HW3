@@ -25,7 +25,7 @@ Do not modify code outside these regions.
 
 ```bash
 colcon build --symlink-install --packages-select controller mpc nav_helpers nav_helpers_msgs
-colcon build --symlink-install --base-paths py # for ROS2 to recognize OptimizedDP
+colcon build --symlink-install --base-paths py
 source install/setup.bash
 ```
 

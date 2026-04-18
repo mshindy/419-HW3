@@ -292,6 +292,17 @@ def least_restrictive_safety_filter(
     # Else, use system_object.optCtrl_inPython to return the optimal control
     # ============================================================
     # STUDENT CODE START
+    current_value = float(g.get_values(V, np.asarray(x, dtype=float)))
+
+    if current_value > epsilon:
+        u_safe = np.asarray(u_nom, dtype=float).reshape(2)
+    else:
+        idx = g.get_indices(np.asarray(x, dtype=float))
+        spat_deriv = np.asarray(derivatives[(slice(None),) + idx], dtype=float).reshape(3)
+        u_safe = np.asarray(
+            system_object.optCtrl_inPython(np.asarray(x, dtype=float), spat_deriv),
+            dtype=float,
+        ).reshape(2)
     # STUDENT CODE END
     return u_safe
 
@@ -323,6 +334,45 @@ class HJController(ControllerBackend):
         # ============================================================
 
         # STUDENT CODE START
+        value_file = cfg.get("value_function_file", "hj_value_function.npy")
+        deriv_file = cfg.get("derivatives_file", "hj_spatial_derivatives.npz")
+        grid_file = cfg.get("grid_file", "hj_grid.npz")
+
+        self._V = np.load(package_share_path + "/" + value_file)
+
+        deriv_data = np.load(package_share_path + "/" + deriv_file)
+        self._derivatives = np.stack(
+            [
+                deriv_data["x_derivative"],
+                deriv_data["y_derivative"],
+                deriv_data["theta_derivative"],
+            ],
+            axis=0,
+        )
+
+        grid_data = np.load(package_share_path + "/" + grid_file)
+        self._g = Grid(
+            np.asarray(grid_data["grid_min"], dtype=float),
+            np.asarray(grid_data["grid_max"], dtype=float),
+            3,
+            np.asarray(grid_data["pts_each_dim"], dtype=int),
+            list(np.asarray(grid_data["periodic_dims"], dtype=int)),
+        )
+
+        self._system = DubinsCar2(
+            uMin=self._u_min.tolist(),
+            uMax=self._u_max.tolist(),
+            dMax=[0.0, 0.0, 0.0],
+            uMode="max",
+            dMode="min",
+        )
+
+        self._goal = np.asarray(cfg.get("goal", [7.5, 0.0, 0.0]), dtype=float)
+        self._corridor_params = {
+            "x_knots": np.asarray(cfg["x_knots"], dtype=float),
+            "y_low_knots": np.asarray(cfg["y_low_knots"], dtype=float),
+            "y_high_knots": np.asarray(cfg["y_high_knots"], dtype=float),
+        }
         # STUDENT CODE END
 
     def get_action(
@@ -338,6 +388,22 @@ class HJController(ControllerBackend):
         # ============================================================
 
         # STUDENT CODE START
+        u_nom = get_nominal_control(
+            x=obs,
+            goal=self._goal,
+            corridor_params=self._corridor_params,
+            params=self._params,
+        )
+
+        action = least_restrictive_safety_filter(
+            x=obs,
+            u_nom=u_nom,
+            g=self._g,
+            V=self._V,
+            derivatives=self._derivatives,
+            epsilon=epsilon,
+            system_object=self._system,
+        )
         # STUDENT CODE END
 
         return np.clip(action, self._u_min, self._u_max), None, None
@@ -383,6 +449,38 @@ def simulate_least_restrictive_hj_filtered_controller(
     # and simulate the closed-loop system.
     # ============================================================
     # STUDENT CODE START
+    value_file = params.get("value_function_file", "hj_value_function.npy")
+    deriv_file = params.get("derivatives_file", "hj_spatial_derivatives.npz")
+    grid_file = params.get("grid_file", "hj_grid.npz")
+
+    V = np.load(package_share_path + "/" + value_file)
+
+    deriv_data = np.load(package_share_path + "/" + deriv_file)
+    derivatives = np.stack(
+        [
+            deriv_data["x_derivative"],
+            deriv_data["y_derivative"],
+            deriv_data["theta_derivative"],
+        ],
+        axis=0,
+    )
+
+    grid_data = np.load(package_share_path + "/" + grid_file)
+    g = Grid(
+        np.asarray(grid_data["grid_min"], dtype=float),
+        np.asarray(grid_data["grid_max"], dtype=float),
+        3,
+        np.asarray(grid_data["pts_each_dim"], dtype=int),
+        list(np.asarray(grid_data["periodic_dims"], dtype=int)),
+    )
+    omega_max = float(params["omega_max"])
+    my_car = DubinsCar2(
+        uMin=[float(params["v_min"]), -omega_max],
+        uMax=[float(params["v_max"]), omega_max],
+        dMax=[0.0, 0.0, 0.0],
+        uMode="max",
+        dMode="min",
+    )
     # STUDENT CODE END
 
     for _ in range(sim_steps):
