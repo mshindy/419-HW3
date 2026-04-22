@@ -2,9 +2,16 @@
   <Domain>
     <General>
       <Interfaces>
-        <!-- <NetworkInterface name="wlp63s0"/> -->
-        <NetworkInterface name="enp42s0"/>
-      </Interfaces>
+        <NetworkInterface name="eth0"/>
+        <!-- <NetworkInterface name="enp42s0"/> -->
+     </Interfaces>
+      <AllowMulticast>true</AllowMulticast>
     </General>
+    <Discovery>
+      <ParticipantIndex>auto</ParticipantIndex>
+      <Peers>
+        <Peer address="172.20.10.3"/>
+      </Peers>
+    </Discovery>
   </Domain>
 </CycloneDDS>
