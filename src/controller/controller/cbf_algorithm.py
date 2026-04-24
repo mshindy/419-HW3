@@ -329,21 +329,16 @@ def cbf_terms(
     L = float(lookahead_distance)
     eps = float(center_margin_buffer)
 
-    # Look-ahead point
     pLx = px + L * np.cos(th)
     pLy = py + L * np.sin(th)
 
     dx = pLx - cx
     dy = pLy - cy
 
-    # Inflate obstacle radius to account for desired center safety plus
-    # the geometric offset introduced by the look-ahead point.
     r_eff = r_obs + d_safe + L + eps
 
-    # Barrier
     h = dx * dx + dy * dy - r_eff * r_eff
 
-    # hdot = a(x) * v + b(x) * omega
     a = 2.0 * (dx * np.cos(th) + dy * np.sin(th))
     b = 2.0 * L * (-dx * np.sin(th) + dy * np.cos(th))
     # STUDENT CODE END
@@ -411,7 +406,6 @@ def solve_cbf_qp(
             and a * v + b * om + gamma * h >= -1e-9
         )
 
-    # Best point in the box without the CBF constraint
     u_box = np.array(
         [
             np.clip(u_nom[0], v_min, v_max),
@@ -434,19 +428,16 @@ def solve_cbf_qp(
             if feasible(u):
                 candidates.append(u)
 
-        # Feasible corners of the box
         for v in [v_min, v_max]:
             for om in [-omega_max, omega_max]:
                 add_candidate(np.array([v, om], dtype=float))
 
-        # Weighted projection of u_nom onto the active CBF boundary
         denom = float(c @ Hinv @ c)
         if denom > 1e-12:
             lam = (d - float(c @ u_nom)) / denom
             u_proj = u_nom + lam * (Hinv @ c)
             add_candidate(u_proj)
 
-        # Intersections of the active CBF boundary with box edges
         if abs(b) > 1e-12:
             for v_fix in [v_min, v_max]:
                 om = (d - a * v_fix) / b
@@ -457,7 +448,6 @@ def solve_cbf_qp(
                 v = (d - b * om_fix) / a
                 add_candidate(np.array([v, om_fix], dtype=float))
 
-        # As a final fallback, search along the box edges
         if len(candidates) == 0:
             grid_v = np.linspace(v_min, v_max, 101)
             grid_w = np.linspace(-omega_max, omega_max, 101)
